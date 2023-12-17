@@ -1,9 +1,11 @@
-const { GuardianClient } = require("./src/guardian/client.js")
+// Custom Client
+const { GuardianClient } = require("./src/guardian/client.js");
 
-const client = new GuardianClient({ intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers,
-] });
-client.init(process.env.Token);
+// Init Client
+const client = new GuardianClient({ intents: Client.Intents});
+// Login to Client
+client.start(client.token);
+// Load Commands
+client.loadCommands(client.config.paths.commands);
+// Load Events
+client.loadEvents(client.config.paths.events);
