@@ -1,11 +1,11 @@
 // Custom Client
 const { GuardianClient } = require("./src/guardian/client.js");
-
+const config = require("./config");
 // Init Client
-const client = new GuardianClient({ intents: Client.Intents});
+const client = new GuardianClient({ intents: config.intents});
 // Login to Client
-client.start(client.token);
+client.start(config.token);
 // Load Commands
-client.loadCommands(client.config.paths.commands);
+client.loadCommands(config.paths.commands);
 // Load Events
-client.loadEvents(client.config.paths.events);
+client.loadEvents(config.paths.events);
