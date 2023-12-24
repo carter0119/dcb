@@ -1,4 +1,10 @@
-const { Client, Collection, GatewayIntentBits } = require("discord.js");
+const {
+  Client,
+  Collection,
+  GatewayIntentBits,
+  REST,
+  Routes,
+} = require("discord.js");
 const logger = require("./logger");
 const moment = require("moment");
 const fs = require("fs");
@@ -8,20 +14,17 @@ class GuardianClient extends Client {
     super({
       intents: intents,
     });
-    this.commands = {
-      message: new Collection(),
-      aliases: new Collection(),
-      slash: new Collection(),
-    };
+    this.slash = new Collection();
+    this.slashData = [];
     this.cooldowns = new Collection();
     this.config = require("../config.js");
-    this.embed = require("../core/embed.js");
-    this.logger = new logger();
+    this.logger = logger;
     this._token = token;
   }
   start() {
     this.login(this._token);
     this.loadCommands(this.config.paths.commands);
+    this.registerCommands();
     this.loadEvents(this.config.paths.events);
   }
   loadCommands() {
@@ -33,9 +36,25 @@ class GuardianClient extends Client {
           `${this.config.paths.commands}/${folder}/${file}`,
         );
         command = new command(this);
-        this.commands.message.set(command.command, command);
+        this.slashData.push(command.data.toJSON());
+        this.slash.set(command.data.name, command);
       }
     }
+  }
+  registerCommands() {
+    const rest = new REST().setToken(this.config.token);
+    (async () => {
+      try {
+        const data = await rest.put(
+          Routes.applicationCommands("1186053829570084916"),
+          {
+            body: this.slashData,
+          },
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    })();
   }
   loadEvents() {
     const files = fs.readdirSync(this.config.paths.events);
@@ -45,7 +64,6 @@ class GuardianClient extends Client {
       if (event.once)
         this.once(event.event, (...args) => event.run(this, ...args));
       else this.on(event.event, (...args) => event.run(this, ...args));
-      console.log(event)
     }
   }
 }
